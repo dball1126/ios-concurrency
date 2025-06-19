@@ -9,21 +9,27 @@ import SwiftUI
 
 struct UsersListView: View {
     #warning("remove the forPreview arguement or set it to false before uploading to App store")
-    @StateObject var vm = UsersListViewModel(forPreview: false)
+    @StateObject var vm = UsersListViewModel(forPreview: true)
     @State var textColor: Color = .blue // Mark textColor as @State
     
     var body: some View {
         NavigationView {
             List {
-                ForEach(vm.users) { user in
+                ForEach(vm.usersAndPosts) { userAndPosts in
                     NavigationLink {
-                        PostsListView(userId: user.id)
+                        PostsListView(posts: userAndPosts.posts)
                     } label: {
                         VStack(alignment: .leading) {
-                            Text(user.name)
-                                .font(.title)
-                                .foregroundStyle(textColor)
-                            Text(user.email)
+                            HStack {
+                                Text(userAndPosts.user.name)
+                                    .font(.title)
+                                    .multilineTextAlignment(.leading)
+                                    .foregroundStyle(textColor)
+                                Spacer()
+                                Text("\(userAndPosts.numberOfPosts)")
+                            }
+                          
+                            Text(userAndPosts.user.email)
             
                         }
                     }
@@ -44,9 +50,10 @@ struct UsersListView: View {
             })
             .navigationTitle("Users")
             .listStyle(.plain)
-            .onAppear {
-                vm.fetchUsers()
-                
+            .task {
+
+                    await vm.fetchUsers()
+
 
             }
         }
